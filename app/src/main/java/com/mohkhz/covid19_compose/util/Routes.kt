@@ -10,5 +10,6 @@ object Routes {
     const val ADD_FAVORITE_SCREEN = "add_favorite"
     const val ABOUT = "about"
     const val COUNTRY_DETAIL = "country_detail"
+    const val COUNTRY_RATING = "country_rating"
 
 }
