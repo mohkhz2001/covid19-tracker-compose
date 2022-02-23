@@ -1,0 +1,25 @@
+package com.mohkhz.covid19_compose.data.model.Covid
+
+data class TotalStatistics(
+    val active: Long,
+    val activePerOneMillion: Float,
+    val affectedCountries: Long,
+    val cases: Long,
+    val casesPerOneMillion: Float,
+    val critical: Long,
+    val criticalPerOneMillion: Float,
+    val deaths: Long,
+    val deathsPerOneMillion: Float,
+    val oneCasePerPeople: Float,
+    val oneDeathPerPeople: Float,
+    val oneTestPerPeople: Float,
+    val population: Long,
+    val recovered: Long,
+    val recoveredPerOneMillion: Float,
+    val tests: Long,
+    val testsPerOneMillion: Float,
+    val todayCases: Long,
+    val todayRecovered: Long,
+    val updated: Long,
+    val todayDeaths: Long,
+)
