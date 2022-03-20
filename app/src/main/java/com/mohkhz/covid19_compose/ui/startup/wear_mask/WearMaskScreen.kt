@@ -40,10 +40,3 @@ fun WearMaskScreen(
     )
 
 }
-
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewWearMAsk() {
-
-}
