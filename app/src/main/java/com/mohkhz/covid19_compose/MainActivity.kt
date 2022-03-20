@@ -26,10 +26,12 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.mohkhz.covid19_compose.ui.About.AboutScreen
 import com.mohkhz.covid19_compose.ui.AddFavorite.AddFavorite
 import com.mohkhz.covid19_compose.ui.Chooser.ChooserScreen
 import com.mohkhz.covid19_compose.ui.Chooser.ChooserViewModel
 import com.mohkhz.covid19_compose.ui.CountryDetail.CountryDetail
+import com.mohkhz.covid19_compose.ui.CountryRating.CountryRating
 import com.mohkhz.covid19_compose.ui.Home.HomeScreen
 import com.mohkhz.covid19_compose.ui.startup.hand_wash.HandWashScreen
 import com.mohkhz.covid19_compose.ui.startup.separate.SeparateScreen
@@ -283,6 +285,66 @@ class MainActivity : ComponentActivity() {
                     onNavigate = {
                         navController.popBackStack()
                     }
+                )
+            }
+
+            composable(Routes.ABOUT,
+                enterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { 1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { -1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                popEnterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { -1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                popExitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { 1000 },
+                        animationSpec = tween(500)
+                    )
+                }) {
+                AboutScreen(onNavigate = {
+                    navController.popBackStack()
+                })
+            }
+
+            composable(Routes.COUNTRY_RATING,
+                enterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { 1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { -1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                popEnterTransition = {
+                    slideInHorizontally(
+                        initialOffsetX = { -1000 },
+                        animationSpec = tween(500)
+                    )
+                },
+                popExitTransition = {
+                    slideOutHorizontally(
+                        targetOffsetX = { 1000 },
+                        animationSpec = tween(500)
+                    )
+                }) {
+                CountryRating(
+                    navigate = { navController.popBackStack() }
                 )
             }
 
