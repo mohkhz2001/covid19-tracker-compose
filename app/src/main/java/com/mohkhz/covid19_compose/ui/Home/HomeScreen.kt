@@ -1,6 +1,10 @@
 package com.mohkhz.covid19_compose.ui.Home
 
+import android.app.Activity
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,18 +13,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -47,10 +47,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
 
-    val cities = viewModel.favoriteCities.collectAsState(initial = emptyList())
-    val totalStatistics = viewModel.globalData.collectAsState(null).value
+    val cities =
+        viewModel.favoriteCities.collectAsState(initial = emptyList()) //  favorite city to show
+    val totalStatistics = viewModel.globalData.collectAsState(null).value // total statistic
 
-    val visibilityProgressBar = viewModel.visibilityProgressBar.collectAsState().value
+    val visibilityProgressBar =
+        viewModel.visibilityProgressBar.collectAsState().value //  visible or invisible the progress bar when the data loaded
 
     LaunchedEffect(key1 = true) {
 
@@ -88,6 +90,26 @@ fun HomeScreen(
 
     }
 
+    var backPressed by remember { // save the number of back press
+        mutableStateOf(0)
+    }
+
+    // get the activity
+    val activity = (LocalContext.current as? Activity)
+
+
+    // handle the back btn => press twice to exit
+    BackHandler(true) {
+        if (backPressed > 1)
+            activity?.finish()
+        else {
+            Toast.makeText(activity!!.applicationContext, "Press back again", Toast.LENGTH_SHORT)
+                .show()
+            backPressed++
+        }
+
+    }
+
     Scaffold(
         Modifier.fillMaxSize(),
         topBar = {
@@ -114,14 +136,23 @@ fun HomeScreen(
                 cities = cities.value,
                 viewModel = viewModel,
                 visibilityProgressBar = visibilityProgressBar,
-                "favoriteItem"
+                "favoriteItem",
+                activity!!.applicationContext
             )
 
             SeparatePart("Other Part", layoutId = "otherSeparate")
 
-            OtherPartItem("Country rating", {}, layoutID = "rating")
+            OtherPartItem(
+                "Country rating",
+                { viewModel.onEvent(HomeEvent.OnCountryRating) },
+                layoutID = "rating"
+            )
             Spacer(modifier = Modifier.height(10.dp))
-            OtherPartItem("About us", {}, layoutID = "about")
+            OtherPartItem(
+                "About us",
+                { viewModel.onEvent(HomeEvent.OnAboutClick) },
+                layoutID = "about"
+            )
         }
 
     }
@@ -196,16 +227,24 @@ fun doubleToStringNoDecimal(d: Long): String? {
 fun FavoritesItem(
     onItemClick: (FavoriteItem) -> Unit,
     item: FavoriteItem,
-    onDelete: () -> Unit,
-    visibility: Boolean = false
+    visibility: Boolean = false,
 ) {
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 18.dp)
             .padding(bottom = 5.dp)
-            .clickable { onItemClick(item) },
+            .clickable {
+                if (!visibility) onItemClick(item) else Toast
+                    .makeText(
+                        context,
+                        "Finding your location Please wait....",
+                        Toast.LENGTH_SHORT
+                    )
+                    .show()
+            },
         backgroundColor = Color(0xffC4E9E5)
     ) {
         Row(
@@ -296,7 +335,7 @@ fun TopApp() {
         },
         backgroundColor = Color(0xffC4E9E5),
         contentColor = Color.Black,
-        elevation = 15.dp
+        elevation = 15.dp,
     )
 }
 
@@ -306,7 +345,7 @@ fun FavoritesLazyColumn(
     cities: List<FavoriteItem>,
     viewModel: HomeViewModel,
     visibilityProgressBar: Boolean,
-    layoutId: Any = ""
+    layoutId: Any = "" , context: Context
 ) {
     LazyColumn(
         Modifier
@@ -325,14 +364,14 @@ fun FavoritesLazyColumn(
                 FavoritesItem(
                     onItemClick = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) },
                     item = item,
-                    { viewModel.onEvent(HomeEvent.OnDeleteItem(item)) },
-                    visibilityProgressBar
-                )
+                    visibilityProgressBar,
+
+                    )
             } else {
                 val state = rememberDismissState(
                     confirmStateChange = {
                         if (it == DismissValue.DismissedToStart) {
-                            viewModel.onEvent(HomeEvent.OnDeleteItem(item))
+                            viewModel.onEvent(HomeEvent.OnDeleteItem(item , context))
                         }
                         false
                     }
@@ -367,7 +406,6 @@ fun FavoritesLazyColumn(
                         FavoritesItem(
                             onItemClick = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) },
                             item = item,
-                            { viewModel.onEvent(HomeEvent.OnDeleteItem(item)) },
                         )
                     },
                     directions = setOf(

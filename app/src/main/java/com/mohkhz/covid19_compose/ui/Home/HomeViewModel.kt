@@ -1,8 +1,13 @@
 package com.mohkhz.covid19_compose.ui.Home
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mohkhz.covid19_compose.Service.AlarmService
 import com.mohkhz.covid19_compose.data.db.FavoriteItem
 import com.mohkhz.covid19_compose.data.model.Covid.TotalStatistics
 import com.mohkhz.covid19_compose.data.repo.Repository
@@ -52,10 +57,20 @@ class HomeViewModel @Inject constructor(
                     sendUiEvent(UiEvent.Navigate(Routes.ADD_FAVORITE_SCREEN))
                 }
                 is HomeEvent.OnDeleteItem -> {
+                    // disable the alarm if the alarm was active
+                    if (event.favoriteItem.alarmActive)
+                        disableAlarm(event.context, event.favoriteItem.reqCode)
+
                     repo.deleteCity(event.favoriteItem)
                 }
                 is HomeEvent.OnFavoriteClick -> {
                     sendUiEvent(UiEvent.Navigate(Routes.COUNTRY_DETAIL + "?countryName=${event.favoriteItem.cityName}"))
+                }
+                is HomeEvent.OnAboutClick -> {
+                    sendUiEvent(UiEvent.Navigate(Routes.ABOUT))
+                }
+                is HomeEvent.OnCountryRating -> {
+                    sendUiEvent(UiEvent.Navigate(Routes.COUNTRY_RATING))
                 }
             }
         }
@@ -128,6 +143,21 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiEvent.send(event)
         }
+    }
+
+    // call when the item removed
+    private fun disableAlarm(context: Context, reqCode: Int) {
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmService::class.java)
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            reqCode,
+            intent,
+            PendingIntent.FLAG_CANCEL_CURRENT
+        )
+        alarmManager.cancel(pendingIntent) //  turn of the notification
     }
 
 }
